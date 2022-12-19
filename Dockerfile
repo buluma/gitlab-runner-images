@@ -35,8 +35,8 @@ RUN locale-gen en_US.UTF-8
 # RUN pip3 install --no-cache-dir $pip_packages
 
 # hadolint ignore=DL3045
-COPY initctl_faker .
-RUN chmod +x initctl_faker && rm -fr /sbin/initctl && ln -s /initctl_faker /sbin/initctl
+# COPY initctl_faker .
+# RUN chmod +x initctl_faker && rm -fr /sbin/initctl && ln -s /initctl_faker /sbin/initctl
 
 # Install Ansible inventory file.
 # RUN mkdir -p /etc/ansible
