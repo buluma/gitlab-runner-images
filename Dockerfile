@@ -1,56 +1,29 @@
-FROM ubuntu
+FROM alpine:3
 
-LABEL maintainer="Michael Buluma"
+LABEL maintainer="Michael Buluma <bulumaknight@gmail.com>"
+LABEL build_date="2022-05-18"
 
-ARG DEBIAN_FRONTEND=noninteractive
+ENV container=docker
 
-# ENV pip_packages "ansible"
+# Enable init.
+RUN apk add --update --no-cache openrc && \
+    sed -i 's/^\(tty\d\:\:\)/#\1/g' /etc/inittab && \
+    sed -i \
+      -e 's/#rc_sys=".*"/rc_sys="docker"/g' \
+      -e 's/#rc_env_allow=".*"/rc_env_allow="\*"/g' \
+      -e 's/#rc_crashed_stop=.*/rc_crashed_stop=NO/g' \
+      -e 's/#rc_crashed_start=.*/rc_crashed_start=YES/g' \
+      -e 's/#rc_provide=".*"/rc_provide="loopback net"/g' \
+      /etc/rc.conf && \
+    rm -f /etc/init.d/hwdrivers \
+      /etc/init.d/hwclock \
+      /etc/init.d/hwdrivers \
+      /etc/init.d/modules \
+      /etc/init.d/modules-load \
+      /etc/init.d/modloop && \
+    sed -i 's/cgroup_add_service /# cgroup_add_service /g' /lib/rc/sh/openrc-run.sh && \
+    sed -i 's/VSERVER/DOCKER/Ig' /lib/rc/sh/init.sh
 
-# Install dependencies.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-       apt-utils \
-       build-essential \
-       locales \
-       libffi-dev \
-       libssl-dev \
-       libyaml-dev \
-       python3 \
-       python3-dev \
-       python3-setuptools \
-       python3-pip \
-       python3-yaml \
-       software-properties-common \
-       rsyslog systemd systemd-cron sudo iproute2 \
-    && apt-get clean \
-    && rm -Rf /var/lib/apt/lists/* \
-    && rm -Rf /usr/share/doc && rm -Rf /usr/share/man
+VOLUME ["/sys/fs/cgroup"]
 
-# hadolint ignore=DL3009
-RUN sed -i 's/^\($ModLoad imklog\)/#\1/' /etc/rsyslog.conf
-
-# Fix potential UTF-8 errors with ansible-test.
-RUN locale-gen en_US.UTF-8
-
-# Install Ansible via Pip. Avoid use of cache directory with pip.
-# RUN pip3 install --no-cache-dir $pip_packages
-
-# hadolint ignore=DL3045
-# COPY initctl_faker .
-# RUN chmod +x initctl_faker && rm -fr /sbin/initctl && ln -s /initctl_faker /sbin/initctl
-
-# Install Ansible inventory file.
-# RUN mkdir -p /etc/ansible
-# hadolint ignore=ShellCheck-SC2028
-# RUN echo "[local]\nlocalhost ansible_connection=local" > /etc/ansible/hosts
-
-# Remove unnecessary getty and udev targets that result in high CPU usage when using
-# multiple containers with Molecule (https://github.com/ansible/molecule/issues/1104)
-RUN rm -f /lib/systemd/system/systemd*udev* \
-  && rm -f /lib/systemd/system/getty.target
-
-VOLUME ["/sys/fs/cgroup", "/tmp", "/run"]
-CMD ["/lib/systemd/systemd"]
-
-HEALTHCHECK --interval=5m --timeout=3s \
-  CMD curl -f http://localhost/ || exit 1
+CMD ["/sbin/init"]
