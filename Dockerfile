@@ -1,11 +1,12 @@
-FROM registry.access.redhat.com/ubi8/ubi
+FROM oraclelinux:8
 
 LABEL maintainer="Michael Buluma <bulumaknight@gmail.com>"
 LABEL build_date="2022-01-03"
 
 ENV container=docker
 
-RUN cd /lib/systemd/system/sysinit.target.wants/ ; \
+RUN dnf -y reinstall systemd
+RUN cd /etc/systemd/system/sysinit.target.wants/ ; \
     for i in * ; do [ $i = systemd-tmpfiles-setup.service ] || rm -f $i ; done ; \
     rm -f /lib/systemd/system/multi-user.target.wants/* ; \
     rm -f /etc/systemd/system/*.wants/* ; \
@@ -17,4 +18,4 @@ RUN cd /lib/systemd/system/sysinit.target.wants/ ; \
 
 VOLUME ["/sys/fs/cgroup"]
 
-CMD ["/sbin/init"]
+CMD ["/usr/sbin/init"]
