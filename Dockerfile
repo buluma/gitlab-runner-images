@@ -1,13 +1,12 @@
-FROM amazonlinux
+FROM registry.access.redhat.com/ubi8/ubi
 
 LABEL maintainer="Michael Buluma <bulumaknight@gmail.com>"
-LABEL build_date="2022-02-11"
+LABEL build_date="2022-01-03"
 
 ENV container=docker
 
-RUN yum -y install systemd ; \
-    cd /lib/systemd/system/sysinit.target.wants/ ; \
-    for i in *; do [ $i = systemd-tmpfiles-setup.service ] || rm -f $i ; done ; \
+RUN cd /lib/systemd/system/sysinit.target.wants/ ; \
+    for i in * ; do [ $i = systemd-tmpfiles-setup.service ] || rm -f $i ; done ; \
     rm -f /lib/systemd/system/multi-user.target.wants/* ; \
     rm -f /etc/systemd/system/*.wants/* ; \
     rm -f /lib/systemd/system/local-fs.target.wants/* ; \
@@ -17,4 +16,5 @@ RUN yum -y install systemd ; \
     rm -f /lib/systemd/system/anaconda.target.wants/*
 
 VOLUME ["/sys/fs/cgroup"]
+
 CMD ["/sbin/init"]
