@@ -1,14 +1,30 @@
-FROM ubuntu
+FROM ubuntu:focal
 
-LABEL maintainer="Michael Buluma"
+LABEL maintainer="Michael Buluma <bulumaknight@gmail.com>"
+LABEL build_date="2022-12-30"
 
-ARG DEBIAN_FRONTEND=noninteractive
+ENV container docker
 
-# ENV pip_packages "ansible"
+# Enable apt repositories.
+RUN sed -i 's/# deb/deb/g' /etc/apt/sources.list
 
-# Install dependencies.
-RUN apt-get update && \
-  apt-get install -y --no-install-recommends \
-  systemd systemd-sysv dbus dbus-user-session
-COPY docker-entrypoint.sh /
-ENTRYPOINT ["/docker-entrypoint.sh"]
+# Enable systemd.
+RUN apt-get update ; \
+    apt-get install -y sudo systemd systemd-sysv dbus ; \
+    apt-get clean ; \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* ; \
+    cd /lib/systemd/system/sysinit.target.wants/ ; \
+    ls | grep -v systemd-tmpfiles-setup | xargs rm -f $1 ; \
+    rm -f /lib/systemd/system/multi-user.target.wants/* ; \
+    rm -f /etc/systemd/system/*.wants/* ; \
+    rm -f /lib/systemd/system/local-fs.target.wants/* ; \
+    rm -f /lib/systemd/system/sockets.target.wants/*udev* ; \
+    rm -f /lib/systemd/system/sockets.target.wants/*initctl* ; \
+    rm -f /lib/systemd/system/basic.target.wants/* ; \
+    rm -f /lib/systemd/system/anaconda.target.wants/* ; \
+    rm -f /lib/systemd/system/plymouth* ; \
+    rm -f /lib/systemd/system/systemd-update-utmp*
+
+VOLUME [ "/sys/fs/cgroup" ]
+
+CMD ["/lib/systemd/systemd"]
