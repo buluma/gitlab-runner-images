@@ -1,11 +1,11 @@
 FROM oraclelinux:8
 
 LABEL maintainer="Michael Buluma <bulumaknight@gmail.com>"
-LABEL build_date="2022-01-03"
+LABEL build_date="2022-12-30"
 
 ENV container=docker
 
-RUN dnf -y reinstall systemd
+RUN dnf -y reinstall systemd systemd-sysv
 RUN cd /etc/systemd/system/sysinit.target.wants/ ; \
     for i in * ; do [ $i = systemd-tmpfiles-setup.service ] || rm -f $i ; done ; \
     rm -f /lib/systemd/system/multi-user.target.wants/* ; \
