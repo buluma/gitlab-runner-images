@@ -23,6 +23,8 @@ RUN dnf makecache \
    python3-pip \
    sudo \
    which \
+   ca-certificates \
+   iproute \
    python3-dnf \
  && dnf clean all
 
