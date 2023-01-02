@@ -1,14 +1,15 @@
-FROM debian
+FROM debian:bullseye
 
-LABEL maintainer="Michael Buluma <bulumaknight@gmail.com>"
-LABEL build_date="2022-01-14"
+LABEL maintainer="buluma"
+LABEL build_update="2023-01-02"
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 ENV container docker
-ENV DEBIAN_FRONTEND noninteractive
 
 # Enable systemd.
 RUN apt-get update ; \
-    apt-get install -y sudo systemd systemd-sysv; \
+    apt-get install -y systemd systemd-sysv ; \
     apt-get clean ; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* ; \
     rm -rf /lib/systemd/system/multi-user.target.wants/* ; \
@@ -18,6 +19,18 @@ RUN apt-get update ; \
     rm -rf /lib/systemd/system/sockets.target.wants/*initctl* ; \
     rm -rf /lib/systemd/system/sysinit.target.wants/systemd-tmpfiles-setup* ; \
     rm -rf /lib/systemd/system/systemd-update-utmp*
+
+# Install requirements.
+RUN apt-get update \
+    && apt-get dist-upgrade -y \
+    && apt-get install -y \
+    python3 \
+    sudo \
+    gnupg \
+    python3-apt \
+    apt-transport-https \
+    ca-certificates \
+    && apt-get clean
 
 VOLUME [ "/sys/fs/cgroup" ]
 CMD ["/lib/systemd/systemd"]
